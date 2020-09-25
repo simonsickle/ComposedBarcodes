@@ -1,0 +1,3 @@
+rootProject.name = "ComposedBarcodes"
+include ':app'
+include ':composed-barcodes'
