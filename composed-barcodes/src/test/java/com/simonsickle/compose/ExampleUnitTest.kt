@@ -1,4 +1,4 @@
-package com.simonsickle.composed_barcodes
+package com.simonsickle.compose
 
 import org.junit.Test
 
