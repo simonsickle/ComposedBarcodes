@@ -48,7 +48,7 @@ fun Barcode(
     // the coroutine to get the bitmap will be started.
     LaunchedEffect(value) {
         scope.launch {
-            withContext(Dispatchers.Main) {
+            withContext(Dispatchers.Default) {
                 barcodeBitmap.value = try {
                     type.getBitmap(
                         width = width.value.toInt(),

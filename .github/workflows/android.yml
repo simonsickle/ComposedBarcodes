@@ -30,7 +30,7 @@ jobs:
     - name: Build with Gradle
       run: ./gradlew build
     - name: Publish Artifacts
-      run: ./gradlew publish
+      run: ./gradlew composed-barcodes:publishReleasePublicationToSonatypeRepository
       env:
         OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
         OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
