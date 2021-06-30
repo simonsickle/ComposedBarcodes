@@ -16,7 +16,7 @@ Examples
 
 Displaying barcodes is super easy! Simply call the composable in your layout.
 
-```
+```kotlin
 val URL = "https://github.com/simonsickle/ComposedBarcodes"
 // Make sure the value is valid for the type of barcode selected. The library will
 // just show an infinite spinner in place of a barcode if the data is not valid.
