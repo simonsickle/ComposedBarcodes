@@ -8,7 +8,7 @@ Gradle users:
 
 
 ```
-implementation("com.simonsickle:composed-barcodes:1.0.0")
+implementation("com.simonsickle:composed-barcodes:1.0.1")
 ```
 
 Examples
