@@ -4,6 +4,8 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
@@ -40,9 +42,10 @@ class MainActivity : AppCompatActivity() {
 
                         // Display the barcode to the user
                         Barcode(
-                            modifier = Modifier.align(Alignment.CenterHorizontally),
-                            width = 150.dp,
-                            height = 150.dp,
+                            modifier = Modifier
+                                .align(Alignment.CenterHorizontally)
+                                .width(300.dp)
+                                .height(300.dp),
                             type = BarcodeType.QR_CODE,
                             value = URL
                         )

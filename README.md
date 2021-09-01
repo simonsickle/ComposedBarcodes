@@ -8,7 +8,7 @@ Gradle users:
 
 
 ```
-implementation("com.simonsickle:composed-barcodes:1.0.1")
+implementation("com.simonsickle:composed-barcodes:1.0.2")
 ```
 
 Examples
@@ -22,9 +22,10 @@ val URL = "https://github.com/simonsickle/ComposedBarcodes"
 // just show an infinite spinner in place of a barcode if the data is not valid.
 if (BarcodeType.QR_CODE.isValueValid(URL)) {
     Barcode(
-        modifier = Modifier.align(Alignment.CenterHorizontally),
-        width = 150.dp, // set the width of the code here. This is used to generate the code, so that's why it isn't in the modifier
-        height = 150.dp, // set the height of the code here. This is used to generate the code, so that's why it isn't in the modifier
+        modifier = Modifier.align(Alignment.CenterHorizontally)
+            .width(150.dp)
+            .height(150.dp),
+        resolutionFactor = 10, // Optionally, increase the resolution of the generated image
         type = BarcodeType.QR_CODE, // pick the type of barcode you want to render
         value = URL // The textual representation of this code
     )
