@@ -1,9 +1,6 @@
 name: Pull Request
 
-on:
-  push:
-    tags:
-      - '**'
+on: [pull_request]
 
 jobs:
   build:
