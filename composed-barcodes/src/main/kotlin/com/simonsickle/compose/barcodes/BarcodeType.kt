@@ -37,11 +37,10 @@ enum class BarcodeType(private val barcodeFormat: BarcodeFormat) {
         }
     }
 
-    internal fun getBitmap(width: Int, height: Int, value: String): ImageBitmap {
-        return MultiFormatWriter().encode(value, barcodeFormat, width, height)
+    internal fun getImageBitmap(width: Int, height: Int, value: String): ImageBitmap =
+        MultiFormatWriter().encode(value, barcodeFormat, width, height)
             .toBitmap()
             .asImageBitmap()
-    }
 
     fun isValueValid(valueToCheck: String): Boolean {
         val barcode = try {
