@@ -50,4 +50,7 @@ dependencies {
     implementation("androidx.compose.foundation:foundation-layout:$compose_version")
     implementation("androidx.compose.material:material:$compose_version")
     implementation("androidx.compose.ui:ui-tooling:$compose_version")
+
+    // Nav components
+    implementation("androidx.navigation:navigation-compose:2.4.0-alpha09")
 }
