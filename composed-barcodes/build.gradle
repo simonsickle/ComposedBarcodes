@@ -6,7 +6,7 @@ plugins {
 
 ext {
     PUBLISH_GROUP_ID = 'com.simonsickle'
-    PUBLISH_VERSION = '1.0.2'
+    PUBLISH_VERSION = '1.0.3'
     PUBLISH_ARTIFACT_ID = 'composed-barcodes'
 }
 
@@ -41,6 +41,12 @@ android {
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_11.toString()
         useIR = true
+
+        // Allow the use of kotlin 1.5.31 and compose
+        freeCompilerArgs += [
+                "-P",
+                "plugin:androidx.compose.compiler.plugins.kotlin:suppressKotlinVersionCompatibilityCheck=true"
+        ]
     }
 
     buildFeatures {
