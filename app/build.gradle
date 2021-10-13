@@ -23,17 +23,27 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_11
         targetCompatibility JavaVersion.VERSION_11
     }
+
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_11.toString()
         useIR = true
+
+        // Allow the use of kotlin 1.5.31 and compose
+        freeCompilerArgs += [
+                "-P",
+                "plugin:androidx.compose.compiler.plugins.kotlin:suppressKotlinVersionCompatibilityCheck=true"
+        ]
     }
+
     buildFeatures {
         compose true
     }
+    
     composeOptions {
         kotlinCompilerExtensionVersion compose_version
     }
@@ -52,5 +62,5 @@ dependencies {
     implementation("androidx.compose.ui:ui-tooling:$compose_version")
 
     // Nav components
-    implementation("androidx.navigation:navigation-compose:2.4.0-alpha09")
+    implementation("androidx.navigation:navigation-compose:2.4.0-alpha10")
 }
