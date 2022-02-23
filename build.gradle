@@ -1,8 +1,10 @@
+import io.gitlab.arturbosch.detekt.Detekt
+
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
     ext {
-        compose_version = '1.0.3'
-        kotlin_version = "1.5.31"
+        compose_version = '1.1.0'
+        kotlin_version = "1.6.10"
     }
 
     repositories {
@@ -11,7 +13,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.0.3'
+        classpath 'com.android.tools.build:gradle:7.0.4'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
 
         // NOTE: Do not place your application dependencies here; they belong
@@ -50,7 +52,7 @@ detekt {
     }
 }
 
-tasks.withType(io.gitlab.arturbosch.detekt.Detekt).configureEach {
+tasks.withType(Detekt).configureEach {
     jvmTarget = JavaVersion.VERSION_11
 }
 
