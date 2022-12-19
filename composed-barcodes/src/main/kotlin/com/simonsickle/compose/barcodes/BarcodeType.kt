@@ -24,16 +24,14 @@ enum class BarcodeType(private val barcodeFormat: BarcodeFormat) {
 
     private fun BitMatrix.toBitmap(): Bitmap {
         return Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888).apply {
-            for (x in 0 until width) {
-                for (y in 0 until height) {
-                    val pixelColor = if (get(x, y)) {
-                        android.graphics.Color.BLACK
-                    } else {
-                        android.graphics.Color.WHITE
-                    }
-                    setPixel(x, y, pixelColor)
+            val pixels = IntArray(width * height)
+            for (y in 0 until height) {
+                val offset = y * width
+                for (x in 0 until width) {
+                    pixels[offset + x] = if (get(x, y)) android.graphics.Color.BLACK else android.graphics.Color.WHITE
                 }
             }
+            setPixels(pixels, 0, width, 0, 0, width, height)
         }
     }
 
