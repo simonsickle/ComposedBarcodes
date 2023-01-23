@@ -24,9 +24,11 @@ fun GenericBarcodeExample(
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
                         .width(300.dp)
-                        .height(300.dp),
+                        .height(100.dp),
                     type = barcodeType,
-                    value = value
+                    value = value,
+                    width = 300.dp,
+                    height = 100.dp,
                 )
                 Text(
                     modifier = Modifier.fillMaxWidth(),
