@@ -27,7 +27,9 @@ import kotlinx.coroutines.withContext
  *
  * @param modifier the modifier to be applied to the layout
  * @param showProgress true will show the progress indicator. Defaults to true.
- * @param resolutionFactor multiplied by 128 to get the resolution, in px, for the bitmap
+ * @param resolutionFactor multiplied on the width/height to get the resolution, in px, for the bitmap
+ * @param width for the generated bitmap multiplied by the resolutionFactor
+ * @param height for the generated bitmap multiplied by the resolutionFactor
  * @param type the type of barcode to render
  * @param value the value of the barcode to show
  */
@@ -35,7 +37,9 @@ import kotlinx.coroutines.withContext
 fun Barcode(
     modifier: Modifier = Modifier,
     showProgress: Boolean = true,
-    resolutionFactor: Int = 10,
+    resolutionFactor: Int = 1,
+    width: Dp = 128.dp,
+    height: Dp = 128.dp,
     type: BarcodeType,
     value: String
 ) {
@@ -49,8 +53,8 @@ fun Barcode(
             withContext(Dispatchers.Default) {
                 barcodeBitmap.value = try {
                     type.getImageBitmap(
-                        width = 128 * resolutionFactor,
-                        height = 128 * resolutionFactor,
+                        width = (width.value * resolutionFactor).toInt(),
+                        height = (height.value * resolutionFactor).toInt(),
                         value = value
                     )
                 } catch (e: Exception) {
@@ -81,38 +85,4 @@ fun Barcode(
             }
         }
     }
-}
-
-/**
- * Barcode asynchronously creates a barcode bitmap in the background and then displays
- * the barcode via an Image composable. A progress indicator shows, optionally, until
- * the barcode value has been encoded to a bitmap.
- *
- * Note: if the barcode is not a valid format, the spinner will continue forever.
- *
- * @param modifier the modifier to be applied to the layout
- * @param width the width desired for the barcode
- * @param height the height desired for the barcode
- * @param showProgress true will show the progress indicator. Defaults to true.
- * @param type the type of barcode to render
- * @param value the value of the barcode to show
- */
-@Deprecated("Please set desired height and width on the modifier")
-@Composable
-fun Barcode(
-    modifier: Modifier = Modifier,
-    width: Dp = 50.dp,
-    height: Dp = 50.dp,
-    showProgress: Boolean = true,
-    type: BarcodeType,
-    value: String
-) {
-    Barcode(
-        modifier = modifier
-            .width(width = width)
-            .height(height = height),
-        showProgress = showProgress,
-        type = type,
-        value = value
-    )
 }
