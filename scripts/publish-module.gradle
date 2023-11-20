@@ -22,6 +22,8 @@ group = PUBLISH_GROUP_ID
 version = PUBLISH_VERSION
 
 afterEvaluate {
+    generateMetadataFileForReleasePublication.dependsOn androidSourcesJar
+
     publishing {
         publications {
             release(MavenPublication) {
