@@ -3,9 +3,7 @@ Composed Barcodes
 
 Make barcode views with ease in Jetpack Compose.
 
-
 Gradle users:
-
 
 ```
 implementation("com.simonsickle:composed-barcodes:1.1.1")
@@ -40,7 +38,8 @@ if (!BarcodeType.CODE_128.isValueValid(URL)) {
 Supported Barcode Types
 -----------------------
 
-We are using ZXing to generate our barcodes and are limited to the types supported by that library. The following are all supported:
+We are using ZXing to generate our barcodes and are limited to the types supported by that library.
+The following are all supported:
 
 ```
 EAN_8

@@ -28,7 +28,11 @@ enum class BarcodeType(private val barcodeFormat: BarcodeFormat) {
             for (y in 0 until height) {
                 val offset = y * width
                 for (x in 0 until width) {
-                    pixels[offset + x] = if (get(x, y)) android.graphics.Color.BLACK else android.graphics.Color.TRANSPARENT
+                    pixels[offset + x] = if (get(
+                            x,
+                            y
+                        )
+                    ) android.graphics.Color.BLACK else android.graphics.Color.TRANSPARENT
                 }
             }
             setPixels(pixels, 0, width, 0, 0, width, height)

@@ -1,9 +1,15 @@
 package com.simonsickle.composedbarcodes
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.*
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Scaffold
+import androidx.compose.material.Text
+import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
@@ -14,7 +20,19 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.simonsickle.compose.barcodes.BarcodeType
-import com.simonsickle.composedbarcodes.examples.*
+import com.simonsickle.composedbarcodes.examples.Aztec
+import com.simonsickle.composedbarcodes.examples.Codabar
+import com.simonsickle.composedbarcodes.examples.Code128
+import com.simonsickle.composedbarcodes.examples.Code39
+import com.simonsickle.composedbarcodes.examples.Code93
+import com.simonsickle.composedbarcodes.examples.DataMatrix
+import com.simonsickle.composedbarcodes.examples.Ean13
+import com.simonsickle.composedbarcodes.examples.Ean8
+import com.simonsickle.composedbarcodes.examples.Itf
+import com.simonsickle.composedbarcodes.examples.Pdf417
+import com.simonsickle.composedbarcodes.examples.Qr
+import com.simonsickle.composedbarcodes.examples.UpcA
+import com.simonsickle.composedbarcodes.examples.UpcE
 
 @Composable
 fun NavigationRegistry() {
@@ -39,8 +57,12 @@ fun NavigationRegistry() {
                     )
                 })
         }
-    ) {
-        Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .padding(paddingValues)
+                .verticalScroll(rememberScrollState())
+        ) {
             NavHost(navController = navController, startDestination = "home") {
                 composable("home") {
                     title.value = "Barcode List"

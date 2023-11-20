@@ -5,18 +5,17 @@ plugins {
 
 ext {
     PUBLISH_GROUP_ID = 'com.simonsickle'
-    PUBLISH_VERSION = '1.1.1'
+    PUBLISH_VERSION = '1.2.0'
     PUBLISH_ARTIFACT_ID = 'composed-barcodes'
 }
 
 apply from: "${rootProject.projectDir}/scripts/publish-module.gradle"
 
 android {
-    compileSdkVersion 33
-
     defaultConfig {
+        compileSdk 34
         minSdkVersion 21
-        targetSdkVersion 33
+        targetSdkVersion 34
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
     }
@@ -32,12 +31,12 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_11
-        targetCompatibility JavaVersion.VERSION_11
+        sourceCompatibility JavaVersion.VERSION_19
+        targetCompatibility JavaVersion.VERSION_19
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_11.toString()
+        jvmTarget = JavaVersion.VERSION_19.toString()
     }
 
     buildFeatures {
@@ -45,7 +44,7 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.4.3"
+        kotlinCompilerExtensionVersion = "1.5.4"
     }
 
     packagingOptions {
@@ -67,11 +66,11 @@ android {
 dependencies {
     implementation("com.google.zxing:core:3.4.1")
 
-    implementation("androidx.compose.runtime:runtime:1.3.3")
-    implementation("androidx.compose.ui:ui:1.3.3")
-    implementation("androidx.compose.foundation:foundation:1.3.1")
-    implementation("androidx.compose.foundation:foundation-layout:1.3.1")
-    implementation("androidx.compose.material:material:1.3.1")
-    implementation 'androidx.compose.ui:ui-tooling-preview:1.3.3'
-    debugImplementation 'androidx.compose.ui:ui-tooling:1.3.3'
+    implementation("androidx.compose.runtime:runtime:1.5.4")
+    implementation("androidx.compose.ui:ui:1.5.4")
+    implementation("androidx.compose.foundation:foundation:1.5.4")
+    implementation("androidx.compose.foundation:foundation-layout:1.5.4")
+    implementation("androidx.compose.material:material:1.5.4")
+    implementation 'androidx.compose.ui:ui-tooling-preview:1.5.4'
+    debugImplementation 'androidx.compose.ui:ui-tooling:1.5.4'
 }
