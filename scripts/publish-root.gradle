@@ -5,14 +5,14 @@ ext["sonatypeStagingProfileId"] = ''
 ext["signing.key"] = ''
 ext["signing.password"] = ''
 
-File secretPropsFile = project.rootProject.file('local.properties')
+File secretPropsFile = project.rootProject.file('secret.properties')
 if (secretPropsFile.exists()) {
-    // Read local.properties file first if it exists
+    // Use the secret.properties file - For local development
     Properties p = new Properties()
     new FileInputStream(secretPropsFile).withCloseable { is -> p.load(is) }
     p.each { name, value -> ext[name] = value }
 } else {
-    // Use system environment variables
+    // Use system environment variables - For CI/CD
     ext["ossrhUsername"] = System.getenv('OSSRH_USERNAME')
     ext["ossrhPassword"] = System.getenv('OSSRH_PASSWORD')
     ext["sonatypeStagingProfileId"] = System.getenv('SONATYPE_STAGING_PROFILE_ID')

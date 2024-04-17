@@ -1,29 +1,10 @@
 apply plugin: 'maven-publish'
 apply plugin: 'signing'
 
-task androidSourcesJar(type: Jar) {
-    archiveClassifier.set('sources')
-    if (project.plugins.findPlugin("com.android.library")) {
-        // For Android libraries
-        from android.sourceSets.main.java.srcDirs
-        from android.sourceSets.main.kotlin.srcDirs
-    } else {
-        // For pure Kotlin libraries, in case you have them
-        from sourceSets.main.java.srcDirs
-        from sourceSets.main.kotlin.srcDirs
-    }
-}
-
-artifacts {
-    archives androidSourcesJar
-}
-
 group = PUBLISH_GROUP_ID
 version = PUBLISH_VERSION
 
 afterEvaluate {
-    generateMetadataFileForReleasePublication.dependsOn androidSourcesJar
-
     publishing {
         publications {
             release(MavenPublication) {
@@ -40,9 +21,6 @@ afterEvaluate {
                     from components.java
                 }
 
-                artifact androidSourcesJar
-                //artifact javadocJar
-
                 // Mostly self-explanatory metadata
                 pom {
                     name = PUBLISH_ARTIFACT_ID
@@ -58,7 +36,7 @@ afterEvaluate {
                         developer {
                             id = 'simonsickle'
                             name = 'Simon Sickle'
-                            email = 'sickle@hey.com'
+                            email = 'simon@sicklefamily.org'
                         }
                     }
 
@@ -79,6 +57,14 @@ signing {
     def signingKey = rootProject.ext["signing.key"]
     def signingPassword = rootProject.ext["signing.password"]
     useGpgCmd()
+
+    /**
+     * To use in memory keys, you must export them with newlines escaped like so:
+     * ```
+       gpg --armor --export-secret-keys someone@example.com \
+       | awk 'NR == 1 { print "GPG_SIGNING_KEY=" } 1' ORS='\\n' | pbcopy
+     * ```
+     */
     useInMemoryPgpKeys(signingKey, signingPassword)
     sign publishing.publications
 }
