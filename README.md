@@ -6,7 +6,7 @@ Make barcode views with ease in Jetpack Compose.
 Gradle users:
 
 ```
-implementation("com.simonsickle:composed-barcodes:1.1.1")
+implementation("com.simonsickle:composed-barcodes:1.3.0")
 ```
 
 Examples
