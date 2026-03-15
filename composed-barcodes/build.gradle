@@ -1,6 +1,7 @@
 plugins {
     id "com.android.library"
     id "kotlin-android"
+    id "org.jetbrains.kotlin.plugin.compose"
 }
 
 ext {
@@ -13,20 +14,20 @@ android {
     namespace "com.simonsickle.compose"
 
     defaultConfig {
-        compileSdk 34
+        compileSdk = 36
         minSdkVersion 21
-        targetSdkVersion 34
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
     }
 
     buildTypes {
-        debug {
-            testCoverageEnabled true
-        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
+        }
+        debug {
+            enableUnitTestCoverage true
+            enableAndroidTestCoverage true
         }
     }
 
@@ -44,7 +45,7 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.12"
+        kotlinCompilerExtensionVersion = libs.versions.composeCompiler.get()
     }
 
     packagingOptions {
@@ -58,6 +59,7 @@ android {
 
     testOptions {
         animationsDisabled true
+        targetSdk 36
     }
 
     publishing {
@@ -66,18 +68,22 @@ android {
             withSourcesJar()
         }
     }
+    lint {
+        targetSdk 36
+    }
 }
 
 dependencies {
-    implementation("com.google.zxing:core:3.4.1")
+    implementation(libs.zxing.core)
 
-    implementation("androidx.compose.runtime:runtime:1.6.6")
-    implementation("androidx.compose.ui:ui:1.6.6")
-    implementation("androidx.compose.foundation:foundation:1.6.6")
-    implementation("androidx.compose.foundation:foundation-layout:1.6.6")
-    implementation("androidx.compose.material:material:1.6.6")
-    implementation "androidx.compose.ui:ui-tooling-preview:1.6.6"
-    debugImplementation "androidx.compose.ui:ui-tooling:1.6.6"
+    implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.compose.runtime)
+    implementation(libs.androidx.compose.ui)
+    implementation(libs.androidx.compose.foundation)
+    implementation(libs.androidx.compose.foundation.layout)
+    implementation(libs.androidx.compose.material)
+    implementation(libs.androidx.compose.ui.tooling.preview)
+    debugImplementation(libs.androidx.compose.ui.tooling)
 }
 
 apply from: "${rootDir}/scripts/publish-module.gradle"

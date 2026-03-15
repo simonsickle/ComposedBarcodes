@@ -1,16 +1,29 @@
+# IDE
+.idea/
 *.iml
-.gradle
-/local.properties
-/secret.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
+
+# System
 .DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
+
+# Gradle / Android metadata
+.gradle/
+build/
 local.properties
+secret.properties
+
+# Android artifacts
+*.apk
+*.aab
+*.dex
+*.class
+*.jar
+*.log
+*.keystore
+*.jks
+
+# Native build outputs
+.cxx/
+.externalNativeBuild/
+
+# Misc
+captures/

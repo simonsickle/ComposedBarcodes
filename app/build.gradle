@@ -1,14 +1,15 @@
 plugins {
     id 'com.android.application'
     id 'kotlin-android'
+    id 'org.jetbrains.kotlin.plugin.compose'
 }
 
 android {
     defaultConfig {
         applicationId "com.simonsickle.composedbarcodes"
-        compileSdk 34
+        compileSdk = 36
         minSdkVersion 26
-        targetSdkVersion 34
+        targetSdkVersion 36
         versionCode 2
         versionName "1.1.0"
 
@@ -36,7 +37,7 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.12"
+        kotlinCompilerExtensionVersion = libs.versions.composeCompiler.get()
     }
 
     namespace "com.simonsickle.composedbarcodes"
@@ -45,15 +46,17 @@ android {
 dependencies {
     implementation(project(":composed-barcodes"))
 
-    implementation("androidx.appcompat:appcompat:1.6.1")
-    implementation("com.google.android.material:material:1.11.0")
+    implementation(libs.androidx.appcompat)
+    implementation(libs.google.material)
 
-    implementation("androidx.compose.runtime:runtime:1.6.6")
-    implementation("androidx.compose.ui:ui:1.6.6")
-    implementation("androidx.compose.foundation:foundation-layout:1.6.6")
-    implementation("androidx.compose.material:material:1.6.6")
-    implementation("androidx.compose.ui:ui-tooling:1.6.6")
+    implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.compose.runtime)
+    implementation(libs.androidx.compose.ui)
+    implementation(libs.androidx.compose.foundation.layout)
+    implementation(libs.androidx.compose.material.icons.core)
+    implementation(libs.androidx.compose.material)
+    implementation(libs.androidx.compose.ui.tooling)
 
     // Nav components
-    implementation("androidx.navigation:navigation-compose:2.7.7")
+    implementation(libs.androidx.navigation.compose)
 }
