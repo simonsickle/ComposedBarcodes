@@ -22,10 +22,14 @@ enum class BarcodeType(private val barcodeFormat: BarcodeFormat) {
     internal val requiresSquareModules: Boolean
         get() = this == QR_CODE || this == DATA_MATRIX || this == AZTEC
 
+    private val writer = object : ThreadLocal<MultiFormatWriter>() {
+        override fun initialValue(): MultiFormatWriter = MultiFormatWriter()
+    }
+
     internal fun getIntrinsicBitMatrix(
         value: String,
         encodeHints: BarcodeEncodeHints = BarcodeEncodeHints.None
-    ): BitMatrix = MultiFormatWriter().encode(
+    ): BitMatrix = getWriter().encode(
         value,
         barcodeFormat,
         1,
@@ -38,11 +42,14 @@ enum class BarcodeType(private val barcodeFormat: BarcodeFormat) {
         encodeHints: BarcodeEncodeHints = BarcodeEncodeHints.None
     ): Boolean {
         val barcode = try {
-            MultiFormatWriter().encode(valueToCheck, barcodeFormat, 25, 25, encodeHints.values)
+            getWriter().encode(valueToCheck, barcodeFormat, 25, 25, encodeHints.values)
         } catch (_: Exception) {
             null
         }
 
         return barcode != null
     }
+
+    private fun getWriter(): MultiFormatWriter =
+        writer.get() ?: MultiFormatWriter().also { writer.set(it) }
 }
