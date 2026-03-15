@@ -25,7 +25,11 @@ if (BarcodeType.QR_CODE.isValueValid(URL)) {
             .height(150.dp),
         resolutionFactor = 10, // Optionally, increase the resolution of the generated image
         type = BarcodeType.QR_CODE, // pick the type of barcode you want to render
-        value = URL // The textual representation of this code
+        value = URL, // The textual representation of this code
+        // Optional ZXing hints such as custom character encoding.
+        encodeHints = BarcodeEncodeHints.of(
+            EncodeHintType.CHARACTER_SET to Charsets.UTF_8.name()
+        )
     )
 }
 

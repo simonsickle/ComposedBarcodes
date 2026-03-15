@@ -34,6 +34,7 @@ import kotlinx.coroutines.withContext
  * @param height for the generated bitmap multiplied by the resolutionFactor
  * @param type the type of barcode to render
  * @param value the value of the barcode to show
+ * @param encodeHints immutable ZXing encode hints wrapper (for example, setting CHARACTER_SET)
  */
 @Composable
 fun Barcode(
@@ -43,21 +44,23 @@ fun Barcode(
     width: Dp = 128.dp,
     height: Dp = 128.dp,
     type: BarcodeType,
-    value: String
+    value: String,
+    encodeHints: BarcodeEncodeHints = BarcodeEncodeHints.None
 ) {
     val barcodeBitmap = remember { mutableStateOf<ImageBitmap?>(null) }
     val scope = rememberCoroutineScope()
 
     // The launched effect will run every time the value changes. So, if the barcode changes,
     // the coroutine to get the bitmap will be started.
-    LaunchedEffect(value) {
+    LaunchedEffect(value, type, width, height, resolutionFactor, encodeHints) {
         scope.launch {
             withContext(Dispatchers.Default) {
                 barcodeBitmap.value = try {
                     type.getImageBitmap(
                         width = (width.value * resolutionFactor).toInt(),
                         height = (height.value * resolutionFactor).toInt(),
-                        value = value
+                        value = value,
+                        encodeHints = encodeHints
                     )
                 } catch (e: Exception) {
                     Log.e("ComposeBarcodes", "Invalid Barcode Format", e)
