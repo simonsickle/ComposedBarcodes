@@ -1,0 +1,10 @@
+---
+description: Base project context and guardrails for ComposedBarcodes.
+alwaysApply: true
+---
+
+- This repo is an Android multi-module Gradle project with `:composed-barcodes` (library) and `:app` (sample app).
+- Prefer small, focused edits; do not do broad refactors unless explicitly requested.
+- Preserve existing public library API behavior in `composed-barcodes` unless the task explicitly asks for a breaking change.
+- Keep new code consistent with existing Kotlin + Jetpack Compose patterns in the touched module.
+- If you add a new sample screen, wire it into both `app/src/main/java/com/simonsickle/composedbarcodes/NavigationRegistry.kt` and `app/src/main/java/com/simonsickle/composedbarcodes/BarcodeList.kt`.
