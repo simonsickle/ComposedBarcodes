@@ -1,8 +1,5 @@
 package com.simonsickle.compose.barcodes
 
-import android.graphics.Bitmap
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.asImageBitmap
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.MultiFormatWriter
 import com.google.zxing.common.BitMatrix
@@ -22,35 +19,19 @@ enum class BarcodeType(private val barcodeFormat: BarcodeFormat) {
     DATA_MATRIX(BarcodeFormat.DATA_MATRIX),
     AZTEC(BarcodeFormat.AZTEC);
 
-    private fun BitMatrix.toBitmap(): Bitmap {
-        return Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888).apply {
-            val pixels = IntArray(width * height)
-            for (y in 0 until height) {
-                val offset = y * width
-                for (x in 0 until width) {
-                    pixels[offset + x] = if (get(
-                            x,
-                            y
-                        )
-                    ) android.graphics.Color.BLACK else android.graphics.Color.TRANSPARENT
-                }
-            }
-            setPixels(pixels, 0, width, 0, 0, width, height)
-        }
-    }
+    internal val requiresSquareModules: Boolean
+        get() = this == QR_CODE || this == DATA_MATRIX || this == AZTEC
 
-    internal fun getImageBitmap(
-        width: Int,
-        height: Int,
+    internal fun getIntrinsicBitMatrix(
         value: String,
         encodeHints: BarcodeEncodeHints = BarcodeEncodeHints.None
-    ): ImageBitmap = MultiFormatWriter().encode(
+    ): BitMatrix = MultiFormatWriter().encode(
         value,
         barcodeFormat,
-        width,
-        height,
+        1,
+        1,
         encodeHints.values
-    ).toBitmap().asImageBitmap()
+    )
 
     fun isValueValid(
         valueToCheck: String,
@@ -58,7 +39,7 @@ enum class BarcodeType(private val barcodeFormat: BarcodeFormat) {
     ): Boolean {
         val barcode = try {
             MultiFormatWriter().encode(valueToCheck, barcodeFormat, 25, 25, encodeHints.values)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             null
         }
 
