@@ -27,7 +27,7 @@ fun BarcodeQrCodePreview() {
     MaterialTheme(colors = lightColors()) {
         Surface(color = MaterialTheme.colors.background) {
             Column(modifier = Modifier.background(Color.White).padding(16.dp)) {
-                Barcode(
+                SynchronousBarcode(
                     modifier = Modifier
                         .width(200.dp)
                         .height(200.dp),
@@ -46,7 +46,7 @@ fun BarcodeCode128Preview() {
     MaterialTheme(colors = lightColors()) {
         Surface(color = MaterialTheme.colors.background) {
             Column(modifier = Modifier.background(Color.White).padding(16.dp)) {
-                Barcode(
+                SynchronousBarcode(
                     modifier = Modifier
                         .width(300.dp)
                         .height(100.dp),
@@ -65,7 +65,7 @@ fun BarcodeEan13Preview() {
     MaterialTheme(colors = lightColors()) {
         Surface(color = MaterialTheme.colors.background) {
             Column(modifier = Modifier.background(Color.White).padding(16.dp)) {
-                Barcode(
+                SynchronousBarcode(
                     modifier = Modifier
                         .width(300.dp)
                         .height(100.dp),
@@ -84,7 +84,7 @@ fun BarcodeUpcAPreview() {
     MaterialTheme(colors = lightColors()) {
         Surface(color = MaterialTheme.colors.background) {
             Column(modifier = Modifier.background(Color.White).padding(16.dp)) {
-                Barcode(
+                SynchronousBarcode(
                     modifier = Modifier
                         .width(300.dp)
                         .height(100.dp),
@@ -103,7 +103,7 @@ fun BarcodeDataMatrixPreview() {
     MaterialTheme(colors = lightColors()) {
         Surface(color = MaterialTheme.colors.background) {
             Column(modifier = Modifier.background(Color.White).padding(16.dp)) {
-                Barcode(
+                SynchronousBarcode(
                     modifier = Modifier
                         .width(200.dp)
                         .height(200.dp),
@@ -122,7 +122,7 @@ fun BarcodeAztecPreview() {
     MaterialTheme(colors = lightColors()) {
         Surface(color = MaterialTheme.colors.background) {
             Column(modifier = Modifier.background(Color.White).padding(16.dp)) {
-                Barcode(
+                SynchronousBarcode(
                     modifier = Modifier
                         .width(200.dp)
                         .height(200.dp),
@@ -141,7 +141,7 @@ fun BarcodePdf417Preview() {
     MaterialTheme(colors = lightColors()) {
         Surface(color = MaterialTheme.colors.background) {
             Column(modifier = Modifier.background(Color.White).padding(16.dp)) {
-                Barcode(
+                SynchronousBarcode(
                     modifier = Modifier
                         .width(300.dp)
                         .height(100.dp),
@@ -160,14 +160,13 @@ fun BarcodeNoProgressPreview() {
     MaterialTheme(colors = lightColors()) {
         Surface(color = MaterialTheme.colors.background) {
             Box(modifier = Modifier.background(Color.White).padding(16.dp)) {
-                Barcode(
+                SynchronousBarcode(
                     modifier = Modifier
                         .width(200.dp)
                         .height(200.dp)
                         .align(Alignment.Center),
                     type = BarcodeType.QR_CODE,
-                    value = "No Progress Test",
-                    showProgress = false
+                    value = "No Progress Test"
                 )
             }
         }
@@ -180,7 +179,7 @@ fun BarcodeHighResolutionPreview() {
     MaterialTheme(colors = lightColors()) {
         Surface(color = MaterialTheme.colors.background) {
             Column(modifier = Modifier.background(Color.White).padding(16.dp)) {
-                Barcode(
+                SynchronousBarcode(
                     modifier = Modifier
                         .width(200.dp)
                         .height(200.dp),
@@ -200,7 +199,7 @@ fun BarcodeSmallPreview() {
     MaterialTheme(colors = lightColors()) {
         Surface(color = MaterialTheme.colors.background) {
             Column(modifier = Modifier.background(Color.White).padding(16.dp)) {
-                Barcode(
+                SynchronousBarcode(
                     modifier = Modifier
                         .width(100.dp)
                         .height(100.dp),
@@ -221,7 +220,7 @@ fun BarcodeCode39Preview() {
     MaterialTheme(colors = lightColors()) {
         Surface(color = MaterialTheme.colors.background) {
             Column(modifier = Modifier.background(Color.White).padding(16.dp)) {
-                Barcode(
+                SynchronousBarcode(
                     modifier = Modifier
                         .width(300.dp)
                         .height(100.dp),

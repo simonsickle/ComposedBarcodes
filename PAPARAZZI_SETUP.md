@@ -93,11 +93,20 @@ The GitHub Actions workflow (`.github/workflows/unit-tests.yml`) runs Paparazzi 
   run: ./gradlew app:verifyPaparazziDebug --stacktrace
 ```
 
+## Implementation Details
+
+### Synchronous Barcode for Testing
+
+To ensure snapshots capture actual barcodes instead of loading states, the library provides a `SynchronousBarcode` composable specifically for preview and testing purposes. This version generates barcodes synchronously during composition, making it ideal for Paparazzi snapshot tests.
+
+- **Production use**: Use the async `Barcode` composable with loading indicator support
+- **Testing/Previews**: Use `SynchronousBarcode` for reliable snapshot testing
+
+All preview composables in `BarcodePreviews.kt` use `SynchronousBarcode` to ensure accurate snapshot rendering.
+
 ## Known Limitations
 
-1. **Async Composables**: The Barcode component uses `LaunchedEffect` for async barcode generation. Paparazzi captures the initial rendering state (loading indicator) rather than the final barcode image.
-
-2. **App Module**: There's a known Gradle serialization issue with `checkDebugClasspath` task in the app module. This doesn't affect the Paparazzi tests but may cause build warnings.
+1. **App Module**: There's a known Gradle dependency version mismatch in the app module (requires compileSdk 35 and AGP 8.6.0+, currently using 34 and 8.5.2). This doesn't affect the library module tests.
 
 ## Troubleshooting
 

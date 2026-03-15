@@ -15,7 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.simonsickle.compose.barcodes.Barcode
+import com.simonsickle.compose.barcodes.SynchronousBarcode
 import com.simonsickle.compose.barcodes.BarcodeType
 
 @Composable
@@ -30,7 +30,7 @@ fun GenericBarcodeExample(
                 .fillMaxSize()
         ) {
             if (barcodeType.isValueValid(value)) {
-                Barcode(
+                SynchronousBarcode(
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
                         .width(300.dp)

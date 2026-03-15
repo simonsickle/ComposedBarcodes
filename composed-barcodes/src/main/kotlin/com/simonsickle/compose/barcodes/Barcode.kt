@@ -91,3 +91,51 @@ fun Barcode(
         }
     }
 }
+
+/**
+ * SynchronousBarcode generates a barcode bitmap synchronously during composition.
+ * This version is intended for snapshot testing with Paparazzi where asynchronous
+ * operations are not suitable. For production use, prefer the async [Barcode] composable.
+ *
+ * @param modifier the modifier to be applied to the layout
+ * @param resolutionFactor multiplied on the width/height to get the resolution, in px, for the bitmap
+ * @param width for the generated bitmap multiplied by the resolutionFactor
+ * @param height for the generated bitmap multiplied by the resolutionFactor
+ * @param type the type of barcode to render
+ * @param value the value of the barcode to show
+ * @param encodeHints immutable ZXing encode hints wrapper (for example, setting CHARACTER_SET)
+ */
+@Composable
+fun SynchronousBarcode(
+    modifier: Modifier = Modifier,
+    resolutionFactor: Int = 1,
+    width: Dp = 128.dp,
+    height: Dp = 128.dp,
+    type: BarcodeType,
+    value: String,
+    encodeHints: BarcodeEncodeHints = BarcodeEncodeHints.None
+) {
+    val barcodeBitmap = remember(value, type, width, height, resolutionFactor, encodeHints) {
+        try {
+            type.getImageBitmap(
+                width = (width.value * resolutionFactor).toInt(),
+                height = (height.value * resolutionFactor).toInt(),
+                value = value,
+                encodeHints = encodeHints
+            )
+        } catch (e: Exception) {
+            Log.e("ComposeBarcodes", "Invalid Barcode Format", e)
+            null
+        }
+    }
+
+    Box(modifier = modifier) {
+        barcodeBitmap?.let { barcode ->
+            Image(
+                modifier = Modifier.fillMaxSize(),
+                painter = BitmapPainter(barcode),
+                contentDescription = value
+            )
+        }
+    }
+}

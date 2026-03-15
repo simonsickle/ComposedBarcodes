@@ -8,8 +8,8 @@ import org.junit.Test
 /**
  * Paparazzi snapshot tests for the Barcode composable.
  * These tests verify the visual appearance of different barcode types and configurations.
- * Note: Due to async barcode generation, these tests capture the loading state.
- * For full barcode rendering tests, use instrumented tests or manual verification.
+ * Uses SynchronousBarcode in preview composables to ensure actual barcodes are rendered
+ * in snapshots rather than loading states.
  */
 class BarcodeSnapshotTest {
 
