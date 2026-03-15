@@ -37,8 +37,6 @@ fun GenericBarcodeExample(
                         .height(100.dp),
                     type = barcodeType,
                     value = value,
-                    width = 300.dp,
-                    height = 100.dp,
                 )
                 Text(
                     modifier = Modifier.fillMaxWidth(),

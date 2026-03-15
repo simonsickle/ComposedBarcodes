@@ -3,21 +3,19 @@ package com.simonsickle.compose.barcodes
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalDensity
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /**
@@ -29,9 +27,6 @@ import kotlinx.coroutines.withContext
  *
  * @param modifier the modifier to be applied to the layout
  * @param showProgress true will show the progress indicator. Defaults to true.
- * @param resolutionFactor multiplied on the width/height to get the resolution, in px, for the bitmap
- * @param width for the generated bitmap multiplied by the resolutionFactor
- * @param height for the generated bitmap multiplied by the resolutionFactor
  * @param type the type of barcode to render
  * @param value the value of the barcode to show
  * @param encodeHints immutable ZXing encode hints wrapper (for example, setting CHARACTER_SET)
@@ -40,25 +35,30 @@ import kotlinx.coroutines.withContext
 fun Barcode(
     modifier: Modifier = Modifier,
     showProgress: Boolean = true,
-    resolutionFactor: Int = 1,
-    width: Dp = 128.dp,
-    height: Dp = 128.dp,
     type: BarcodeType,
     value: String,
     encodeHints: BarcodeEncodeHints = BarcodeEncodeHints.None
 ) {
     val barcodeBitmap = remember { mutableStateOf<ImageBitmap?>(null) }
-    val scope = rememberCoroutineScope()
 
-    // The launched effect will run every time the value changes. So, if the barcode changes,
-    // the coroutine to get the bitmap will be started.
-    LaunchedEffect(value, type, width, height, resolutionFactor, encodeHints) {
-        scope.launch {
-            withContext(Dispatchers.Default) {
-                barcodeBitmap.value = try {
+    // Read dimensions from layout constraints so callers control size via modifier.
+    BoxWithConstraints(modifier = modifier) {
+        val density = LocalDensity.current
+        val widthPx = with(density) { maxWidth.roundToPx() }
+        val heightPx = with(density) { maxHeight.roundToPx() }
+
+        // The launched effect runs whenever inputs or available draw size change.
+        LaunchedEffect(value, type, widthPx, heightPx, encodeHints) {
+            if (widthPx <= 0 || heightPx <= 0) {
+                barcodeBitmap.value = null
+                return@LaunchedEffect
+            }
+
+            barcodeBitmap.value = withContext(Dispatchers.Default) {
+                try {
                     type.getImageBitmap(
-                        width = (width.value * resolutionFactor).toInt(),
-                        height = (height.value * resolutionFactor).toInt(),
+                        width = widthPx,
+                        height = heightPx,
                         value = value,
                         encodeHints = encodeHints
                     )
@@ -68,25 +68,23 @@ fun Barcode(
                 }
             }
         }
-    }
 
-    // Contain the barcode in a box that matches the provided dimensions
-    Box(modifier = modifier) {
-        // If the barcode is not null, display it. If it is null, then the code hasn't
-        // completed the draw in the background so show a progress spinner in place.
-        barcodeBitmap.value?.let { barcode ->
-            Image(
-                modifier = Modifier.fillMaxSize(),
-                painter = BitmapPainter(barcode),
-                contentDescription = value
-            )
-        } ?: run {
-            if (showProgress) {
-                CircularProgressIndicator(
-                    modifier = Modifier
-                        .fillMaxSize(0.5f)
-                        .align(Alignment.Center)
+        // If the barcode is not null, display it. If it is null, show a progress spinner.
+        Box(modifier = Modifier.fillMaxSize()) {
+            barcodeBitmap.value?.let { barcode ->
+                Image(
+                    modifier = Modifier.fillMaxSize(),
+                    painter = BitmapPainter(barcode),
+                    contentDescription = value
                 )
+            } ?: run {
+                if (showProgress) {
+                    CircularProgressIndicator(
+                        modifier = Modifier
+                            .fillMaxSize(0.5f)
+                            .align(Alignment.Center)
+                    )
+                }
             }
         }
     }
