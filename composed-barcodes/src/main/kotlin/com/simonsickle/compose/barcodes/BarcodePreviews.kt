@@ -19,6 +19,13 @@ import androidx.compose.ui.unit.dp
 
 /**
  * Preview composables for the Barcode component to enable snapshot testing.
+ * 
+ * Each preview uses SynchronousBarcode with matching width/height parameters
+ * to prevent distortion and maintain proper aspect ratios for each barcode type:
+ * - Square (200x200): QR Code, Data Matrix, Aztec
+ * - Wide rectangle (400x120): Code 128, Code 39
+ * - Wide rectangle (400x150): EAN-13, UPC-A
+ * - Medium rectangle (300x100): PDF417
  */
 
 @Preview(name = "QR Code Default")
@@ -32,7 +39,9 @@ fun BarcodeQrCodePreview() {
                         .width(200.dp)
                         .height(200.dp),
                     type = BarcodeType.QR_CODE,
-                    value = "https://github.com/simonsickle/composed-barcodes"
+                    value = "https://github.com/simonsickle/composed-barcodes",
+                    width = 200.dp,
+                    height = 200.dp
                 )
                 Text("QR Code")
             }
@@ -48,10 +57,12 @@ fun BarcodeCode128Preview() {
             Column(modifier = Modifier.background(Color.White).padding(16.dp)) {
                 SynchronousBarcode(
                     modifier = Modifier
-                        .width(300.dp)
-                        .height(100.dp),
+                        .width(400.dp)
+                        .height(120.dp),
                     type = BarcodeType.CODE_128,
-                    value = "123456789012"
+                    value = "123456789012",
+                    width = 400.dp,
+                    height = 120.dp
                 )
                 Text("Code 128")
             }
@@ -67,10 +78,12 @@ fun BarcodeEan13Preview() {
             Column(modifier = Modifier.background(Color.White).padding(16.dp)) {
                 SynchronousBarcode(
                     modifier = Modifier
-                        .width(300.dp)
-                        .height(100.dp),
+                        .width(400.dp)
+                        .height(150.dp),
                     type = BarcodeType.EAN_13,
-                    value = "978020137962"
+                    value = "978020137962",
+                    width = 400.dp,
+                    height = 150.dp
                 )
                 Text("EAN-13")
             }
@@ -86,10 +99,12 @@ fun BarcodeUpcAPreview() {
             Column(modifier = Modifier.background(Color.White).padding(16.dp)) {
                 SynchronousBarcode(
                     modifier = Modifier
-                        .width(300.dp)
-                        .height(100.dp),
+                        .width(400.dp)
+                        .height(150.dp),
                     type = BarcodeType.UPC_A,
-                    value = "012345678905"
+                    value = "012345678905",
+                    width = 400.dp,
+                    height = 150.dp
                 )
                 Text("UPC-A")
             }
@@ -108,7 +123,9 @@ fun BarcodeDataMatrixPreview() {
                         .width(200.dp)
                         .height(200.dp),
                     type = BarcodeType.DATA_MATRIX,
-                    value = "Data Matrix Test"
+                    value = "Data Matrix Test",
+                    width = 200.dp,
+                    height = 200.dp
                 )
                 Text("Data Matrix")
             }
@@ -127,7 +144,9 @@ fun BarcodeAztecPreview() {
                         .width(200.dp)
                         .height(200.dp),
                     type = BarcodeType.AZTEC,
-                    value = "Aztec Code Test"
+                    value = "Aztec Code Test",
+                    width = 200.dp,
+                    height = 200.dp
                 )
                 Text("Aztec Code")
             }
@@ -146,7 +165,9 @@ fun BarcodePdf417Preview() {
                         .width(300.dp)
                         .height(100.dp),
                     type = BarcodeType.PDF_417,
-                    value = "PDF417 Test Data"
+                    value = "PDF417 Test Data",
+                    width = 300.dp,
+                    height = 100.dp
                 )
                 Text("PDF417")
             }
@@ -166,7 +187,9 @@ fun BarcodeNoProgressPreview() {
                         .height(200.dp)
                         .align(Alignment.Center),
                     type = BarcodeType.QR_CODE,
-                    value = "No Progress Test"
+                    value = "No Progress Test",
+                    width = 200.dp,
+                    height = 200.dp
                 )
             }
         }
@@ -222,10 +245,12 @@ fun BarcodeCode39Preview() {
             Column(modifier = Modifier.background(Color.White).padding(16.dp)) {
                 SynchronousBarcode(
                     modifier = Modifier
-                        .width(300.dp)
-                        .height(100.dp),
+                        .width(400.dp)
+                        .height(120.dp),
                     type = BarcodeType.CODE_39,
-                    value = "CODE39TEST"
+                    value = "CODE39TEST",
+                    width = 400.dp,
+                    height = 120.dp
                 )
                 Text("Code 39")
             }

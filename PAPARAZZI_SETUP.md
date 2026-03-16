@@ -36,7 +36,6 @@ dependencies {
 
 #### Test Files:
 - `BarcodeSnapshotTest.kt` - Tests all Barcode component preview variations
-- `SimplePreviewTest.kt` - Basic verification test
 
 #### Preview Composables:
 Created in `BarcodePreviews.kt`, covering:
@@ -103,6 +102,8 @@ To ensure snapshots capture actual barcodes instead of loading states, the libra
 - **Testing/Previews**: Use `SynchronousBarcode` for reliable snapshot testing
 
 All preview composables in `BarcodePreviews.kt` use `SynchronousBarcode` to ensure accurate snapshot rendering.
+
+**Important**: When using `SynchronousBarcode`, ensure the `width` and `height` parameters match the modifier dimensions to prevent barcode distortion. This maintains proper aspect ratios for each barcode type (e.g., square for QR codes and Data Matrix, wide rectangles for Code 128, EAN-13, and UPC-A).
 
 ## Known Limitations
 
