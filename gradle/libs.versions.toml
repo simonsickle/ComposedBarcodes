@@ -5,6 +5,8 @@ appcompat = "1.7.1"
 material = "1.13.0"
 navigationCompose = "2.9.7"
 zxingCore = "3.5.4"
+paparazzi = "1.3.4"
+junit = "4.13.2"
 
 [libraries]
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
@@ -20,3 +22,7 @@ androidx-compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling" }
 androidx-compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview" }
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
 zxing-core = { group = "com.google.zxing", name = "core", version.ref = "zxingCore" }
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+
+[plugins]
+paparazzi = { id = "app.cash.paparazzi", version.ref = "paparazzi" }
