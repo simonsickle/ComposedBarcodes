@@ -1,6 +1,5 @@
 package com.simonsickle.compose.barcodes
 
-import android.graphics.Bitmap
 import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Box
@@ -12,18 +11,15 @@ import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.FilterQuality
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.IntSize
 import com.google.zxing.common.BitMatrix
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import kotlin.math.floor
-import kotlin.math.roundToInt
 
 /**
  * Barcode asynchronously creates a ZXing matrix in the background and then draws it
@@ -45,29 +41,25 @@ fun Barcode(
     encodeHints: BarcodeEncodeHints = BarcodeEncodeHints.None
 ) {
     val request = remember(type, value, encodeHints) {
-        BarcodeRequest(
-            type = type,
-            value = value,
-            encodeHints = encodeHints
-        )
+        BarcodeRequest(type = type, value = value, encodeHints = encodeHints)
     }
 
     val uiState by produceState<BarcodeUiState>(
         initialValue = BarcodeUiState.Loading,
         request
     ) {
-        BarcodeRenderCache.get(request.cacheKey)?.let { cached ->
+        BarcodeMatrixCache.get(request.cacheKey)?.let { cached ->
             this.value = BarcodeUiState.Ready(cached)
             return@produceState
         }
 
-        val renderedBarcode = withContext(Dispatchers.Default) {
-            BarcodePipeline.encodeAndRender(request)
+        val encoded = withContext(Dispatchers.Default) {
+            BarcodeEncoder.encode(request)
         }
 
-        if (renderedBarcode != null) {
-            BarcodeRenderCache.put(request.cacheKey, renderedBarcode)
-            this.value = BarcodeUiState.Ready(renderedBarcode)
+        if (encoded != null) {
+            BarcodeMatrixCache.put(request.cacheKey, encoded)
+            this.value = BarcodeUiState.Ready(encoded)
         } else {
             this.value = BarcodeUiState.Error
         }
@@ -86,12 +78,14 @@ fun Barcode(
         }
     }
 
-    // If the barcode is not null, draw it. If it is still encoding, show a spinner.
     Box(modifier = modifier) {
         when (val state = uiState) {
             is BarcodeUiState.Ready -> {
                 Canvas(modifier = Modifier.fillMaxSize()) {
-                    drawBarcode(state.renderData)
+                    drawBitMatrix(
+                        renderPlan = state.barcode.renderPlan,
+                        requiresSquareModules = state.barcode.requiresSquareModules
+                    )
                 }
             }
             BarcodeUiState.Loading -> {
@@ -108,62 +102,49 @@ fun Barcode(
     }
 }
 
-private sealed interface BarcodeUiState {
-    data object Loading : BarcodeUiState
-    data object Error : BarcodeUiState
-    data class Ready(val renderData: BarcodeRenderData) : BarcodeUiState
-}
-
 private data class BarcodeRequest(
     val type: BarcodeType,
     val value: String,
     val encodeHints: BarcodeEncodeHints
 ) {
     val cacheKey: BarcodeCacheKey
-        get() = BarcodeCacheKey(type, value, encodeHints)
+        get() = BarcodeCacheKey(type = type, value = value, encodeHints = encodeHints)
 }
 
-private data class BarcodeRenderData(
-    val matrixWidth: Int,
-    val matrixHeight: Int,
+private sealed interface BarcodeUiState {
+    data object Loading : BarcodeUiState
+    data object Error : BarcodeUiState
+    data class Ready(val barcode: EncodedBarcode) : BarcodeUiState
+}
+
+private data class EncodedBarcode(
+    val renderPlan: BarcodeRenderPlan,
     val requiresSquareModules: Boolean,
-    val image: ImageBitmap,
-    val byteCount: Int
+    val estimatedSizeBytes: Int
 )
 
-private object BarcodePipeline {
-    fun encodeAndRender(request: BarcodeRequest): BarcodeRenderData? = try {
-        request.type.getIntrinsicBitMatrix(
-            value = request.value,
-            encodeHints = request.encodeHints
-        ).toRenderData(requiresSquareModules = request.type.requiresSquareModules)
-    } catch (e: Exception) {
-        Log.e("ComposeBarcodes", "Invalid Barcode Format", e)
-        null
-    }
-}
+private object BarcodeEncoder {
+    fun encode(request: BarcodeRequest): EncodedBarcode? {
+        if (request.value.isBlank()) return null
 
-private fun BitMatrix.toRenderData(requiresSquareModules: Boolean): BarcodeRenderData =
-    BarcodeRenderData(
-        matrixWidth = width,
-        matrixHeight = height,
-        requiresSquareModules = requiresSquareModules,
-        image = toImageBitmap(),
-        byteCount = width * height * BYTES_PER_PIXEL_ARGB_8888
-    )
-
-private fun BitMatrix.toImageBitmap(): ImageBitmap {
-    val pixels = IntArray(width * height)
-    var index = 0
-
-    for (row in 0 until height) {
-        for (column in 0 until width) {
-            pixels[index] = if (get(column, row)) BLACK_PIXEL_ARGB else TRANSPARENT_PIXEL_ARGB
-            index++
+        val matrix = try {
+            request.type.getIntrinsicBitMatrix(
+                value = request.value,
+                encodeHints = request.encodeHints
+            )
+        } catch (e: Exception) {
+            Log.e("ComposeBarcodes", "Invalid Barcode Format", e)
+            return null
         }
-    }
 
-    return Bitmap.createBitmap(pixels, width, height, Bitmap.Config.ARGB_8888).asImageBitmap()
+        val renderPlan = buildRenderPlan(matrix)
+
+        return EncodedBarcode(
+            renderPlan = renderPlan,
+            requiresSquareModules = request.type.requiresSquareModules,
+            estimatedSizeBytes = estimateRenderPlanSizeBytes(renderPlan)
+        )
+    }
 }
 
 private data class BarcodeCacheKey(
@@ -172,24 +153,24 @@ private data class BarcodeCacheKey(
     val encodeHints: BarcodeEncodeHints
 )
 
-private object BarcodeRenderCache {
-    private const val MAX_CACHE_SIZE_BYTES = 2 * 1024 * 1024
-    private val entries = LinkedHashMap<BarcodeCacheKey, BarcodeRenderData>(
+private object BarcodeMatrixCache {
+    private const val MAX_CACHE_SIZE_BYTES = 512 * 1024
+    private val entries = LinkedHashMap<BarcodeCacheKey, EncodedBarcode>(
         16,
         0.75f,
         true
     )
     private var currentSizeBytes = 0
 
-    fun get(key: BarcodeCacheKey): BarcodeRenderData? = synchronized(entries) {
+    fun get(key: BarcodeCacheKey): EncodedBarcode? = synchronized(entries) {
         entries[key]
     }
 
-    fun put(key: BarcodeCacheKey, value: BarcodeRenderData) = synchronized(entries) {
+    fun put(key: BarcodeCacheKey, value: EncodedBarcode) = synchronized(entries) {
         entries.put(key, value)?.let { previous ->
-            currentSizeBytes -= previous.byteCount
+            currentSizeBytes -= previous.estimatedSizeBytes
         }
-        currentSizeBytes += value.byteCount
+        currentSizeBytes += value.estimatedSizeBytes
         trimToSize()
     }
 
@@ -197,24 +178,72 @@ private object BarcodeRenderCache {
         val iterator = entries.entries.iterator()
         while (currentSizeBytes > MAX_CACHE_SIZE_BYTES && iterator.hasNext()) {
             val entry = iterator.next()
-            currentSizeBytes -= entry.value.byteCount
+            currentSizeBytes -= entry.value.estimatedSizeBytes
             iterator.remove()
         }
     }
 }
 
-private const val PROGRESS_VISIBILITY_DELAY_MS = 120L
-private const val BYTES_PER_PIXEL_ARGB_8888 = 4
-private const val BLACK_PIXEL_ARGB = -0x1000000
-private const val TRANSPARENT_PIXEL_ARGB = 0
+private fun estimateRenderPlanSizeBytes(renderPlan: BarcodeRenderPlan): Int {
+    var runBytes = 0
+    for (rowRuns in renderPlan.runsByRow) {
+        runBytes += rowRuns.size * Int.SIZE_BYTES
+    }
+    return runBytes + 96
+}
 
-private fun DrawScope.drawBarcode(barcode: BarcodeRenderData) {
-    val baseModuleWidth = floor(size.width / barcode.matrixWidth.toFloat())
-    val baseModuleHeight = floor(size.height / barcode.matrixHeight.toFloat())
+internal class BarcodeRenderPlan(
+    val width: Int,
+    val height: Int,
+    val runsByRow: Array<IntArray>
+)
+
+internal fun buildRenderPlan(matrix: BitMatrix): BarcodeRenderPlan {
+    val width = matrix.width
+    val height = matrix.height
+    val runsByRow = Array(height) { row ->
+        // Worst case is alternating black/white values.
+        val runs = IntArray(width + 1)
+        var runIndex = 0
+        var column = 0
+        while (column < width) {
+            while (column < width && !matrix.get(column, row)) {
+                column++
+            }
+            if (column >= width) continue
+
+            val runStart = column
+            while (column < width && matrix.get(column, row)) {
+                column++
+            }
+
+            runs[runIndex++] = runStart
+            runs[runIndex++] = column
+        }
+        runs.copyOf(runIndex)
+    }
+
+    return BarcodeRenderPlan(
+        width = width,
+        height = height,
+        runsByRow = runsByRow
+    )
+}
+
+internal fun DrawScope.drawBitMatrix(
+    renderPlan: BarcodeRenderPlan,
+    requiresSquareModules: Boolean
+) {
+    val matrixWidth = renderPlan.width
+    val matrixHeight = renderPlan.height
+    if (matrixWidth <= 0 || matrixHeight <= 0) return
+
+    val baseModuleWidth = floor(size.width / matrixWidth.toFloat())
+    val baseModuleHeight = floor(size.height / matrixHeight.toFloat())
     val moduleWidth: Float
     val moduleHeight: Float
 
-    if (barcode.requiresSquareModules) {
+    if (requiresSquareModules) {
         val squareModuleSize = minOf(baseModuleWidth, baseModuleHeight).coerceAtLeast(1f)
         moduleWidth = squareModuleSize
         moduleHeight = squareModuleSize
@@ -223,17 +252,32 @@ private fun DrawScope.drawBarcode(barcode: BarcodeRenderData) {
         moduleHeight = baseModuleHeight.coerceAtLeast(1f)
     }
 
-    val barcodeWidth = (moduleWidth * barcode.matrixWidth).roundToInt().coerceAtLeast(1)
-    val barcodeHeight = (moduleHeight * barcode.matrixHeight).roundToInt().coerceAtLeast(1)
-    val offsetX = ((size.width - barcodeWidth) / 2f).roundToInt()
-    val offsetY = ((size.height - barcodeHeight) / 2f).roundToInt()
+    val barcodeWidth = moduleWidth * matrixWidth
+    val barcodeHeight = moduleHeight * matrixHeight
+    val offsetX = (size.width - barcodeWidth) / 2f
+    val offsetY = (size.height - barcodeHeight) / 2f
 
-    drawImage(
-        image = barcode.image,
-        srcOffset = IntOffset.Zero,
-        srcSize = IntSize(barcode.matrixWidth, barcode.matrixHeight),
-        dstOffset = IntOffset(offsetX, offsetY),
-        dstSize = IntSize(barcodeWidth, barcodeHeight),
-        filterQuality = FilterQuality.None
-    )
+    // Runs are precomputed off the main thread so drawing can stay lightweight.
+    for (row in 0 until matrixHeight) {
+        val rowRuns = renderPlan.runsByRow[row]
+        var index = 0
+        while (index < rowRuns.size) {
+            val runStart = rowRuns[index]
+            val runEnd = rowRuns[index + 1]
+            drawRect(
+                color = Color.Black,
+                topLeft = Offset(
+                    x = offsetX + runStart * moduleWidth,
+                    y = offsetY + row * moduleHeight
+                ),
+                size = Size(
+                    width = (runEnd - runStart) * moduleWidth,
+                    height = moduleHeight
+                )
+            )
+            index += 2
+        }
+    }
 }
+
+private const val PROGRESS_VISIBILITY_DELAY_MS = 120L

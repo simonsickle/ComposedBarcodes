@@ -60,3 +60,41 @@ CODABAR
 DATA_MATRIX
 AZTEC
 ```
+
+Benchmarking and Perf Verification
+----------------------------------
+
+The library now includes instrumentation benchmark + verification tests in
+`composed-barcodes/src/androidTest/kotlin/com/simonsickle/compose/barcodes`.
+
+Run benchmark suites on a connected device:
+
+```bash
+./gradlew :composed-barcodes:connectedDebugAndroidTest \
+  -Pandroid.testInstrumentationRunnerArguments.class=com.simonsickle.compose.barcodes.BarcodePipelineBenchmark
+```
+
+Run regression/perf verification assertions:
+
+```bash
+./gradlew :composed-barcodes:connectedDebugAndroidTest \
+  -Pandroid.testInstrumentationRunnerArguments.class=com.simonsickle.compose.barcodes.BarcodePerformanceVerificationTest
+```
+
+Run macrobenchmarks (startup + Compose frame timing in the sample app):
+
+```bash
+./gradlew :macrobenchmark:connectedBenchmarkAndroidTest
+```
+
+Capture golden macrobenchmark timings after a trusted run:
+
+```bash
+./gradlew :macrobenchmark:captureMacrobenchmarkGolden
+```
+
+Verify latest macrobenchmark run against the saved golden timings:
+
+```bash
+./gradlew :macrobenchmark:verifyMacrobenchmarkGolden
+```

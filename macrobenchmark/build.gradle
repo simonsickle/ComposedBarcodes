@@ -1,0 +1,219 @@
+import groovy.json.JsonOutput
+import groovy.json.JsonSlurper
+import java.util.Locale
+
+plugins {
+    id 'com.android.test'
+}
+
+android {
+    namespace "com.simonsickle.composedbarcodes.macrobenchmark"
+    compileSdk = 36
+
+    defaultConfig {
+        minSdkVersion 23
+        targetSdkVersion 36
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    targetProjectPath = ":app"
+    experimentalProperties["android.experimental.self-instrumenting"] = true
+
+    buildTypes {
+        benchmark {
+            debuggable = true
+        }
+    }
+
+    testOptions {
+        animationsDisabled true
+    }
+}
+
+androidComponents {
+    beforeVariants(selector().all()) { variant ->
+        variant.enable = variant.buildType == "benchmark"
+    }
+}
+
+dependencies {
+    implementation(libs.androidx.benchmark.macro.junit4)
+    implementation(libs.androidx.test.ext.junit)
+    implementation(libs.androidx.test.uiautomator)
+}
+
+def macrobenchmarkGoldenFile = file("${projectDir}/golden/macrobenchmark-golden.json")
+
+def readLatestBenchmarkData = { boolean failOnMissing = true ->
+    def benchmarkDataFiles = fileTree("${buildDir}/outputs").matching {
+        include "**/benchmarkData.json"
+    }.files
+
+    if (benchmarkDataFiles.isEmpty()) {
+        if (failOnMissing) {
+            throw new GradleException(
+                "No benchmarkData.json found under ${buildDir}/outputs. " +
+                    "Run :macrobenchmark:connectedBenchmarkAndroidTest first."
+            )
+        }
+        logger.lifecycle(
+            "Skipping task: no benchmarkData.json found under ${buildDir}/outputs. " +
+                "Run :macrobenchmark:connectedBenchmarkAndroidTest first."
+        )
+        return null
+    }
+
+    def newestDataFile = benchmarkDataFiles.max { it.lastModified() }
+    return new JsonSlurper().parse(newestDataFile)
+}
+
+def locateMetricStat = { benchmarkData, benchmarkName, metricName, statistic ->
+    def benchmarkEntry = benchmarkData.benchmarks?.find { benchmark ->
+        def fullName = "${benchmark.className}.${benchmark.name}"
+        fullName.contains(benchmarkName) || benchmark.name == benchmarkName
+    }
+
+    if (benchmarkEntry == null) {
+        throw new GradleException("Benchmark '${benchmarkName}' not found in benchmarkData.json.")
+    }
+
+    def metricData = benchmarkEntry.metrics?.get(metricName)
+    if (metricData == null) {
+        throw new GradleException(
+            "Metric '${metricName}' not found for '${benchmarkName}'. " +
+                "Available metrics: ${benchmarkEntry.metrics?.keySet()}"
+        )
+    }
+
+    if (metricData instanceof Number) {
+        return metricData.doubleValue()
+    }
+
+    if (!(metricData instanceof Map)) {
+        throw new GradleException(
+            "Metric '${metricName}' for '${benchmarkName}' is not a number/map: ${metricData.getClass()}"
+        )
+    }
+
+    def statKeyCandidates = [statistic]
+    if (statistic.equalsIgnoreCase("median")) {
+        statKeyCandidates += ["median", "Median", "p50", "P50"]
+    } else if (statistic.equalsIgnoreCase("p95")) {
+        statKeyCandidates += ["p95", "P95", "95thPercentile", "percentile95"]
+    }
+
+    def statValue = statKeyCandidates.collect { candidate ->
+        metricData.containsKey(candidate) ? metricData[candidate] : null
+    }.find { it != null }
+
+    if (statValue == null) {
+        throw new GradleException(
+            "Statistic '${statistic}' not found for metric '${metricName}' on '${benchmarkName}'. " +
+                "Available stats: ${metricData.keySet()}"
+        )
+    }
+
+    return statValue as double
+}
+
+tasks.register("captureMacrobenchmarkGolden") {
+    group = "verification"
+    description = "Captures current macrobenchmark timings into golden/macrobenchmark-golden.json"
+
+    doLast {
+        def benchmarkData = readLatestBenchmarkData(false)
+        if (benchmarkData == null) {
+            return
+        }
+
+        def captured = [
+            schemaVersion: 1,
+            benchmarks  : [
+                [
+                    benchmark      : "BarcodeMacrobenchmark.startupCold",
+                    metric         : "startupMs",
+                    statistic      : "median",
+                    value          : locateMetricStat(
+                        benchmarkData,
+                        "BarcodeMacrobenchmark.startupCold",
+                        "startupMs",
+                        "median"
+                    ),
+                    allowedDriftPct: 15.0
+                ],
+                [
+                    benchmark      : "BarcodeMacrobenchmark.openQrCode",
+                    metric         : "frameDurationCpuMs",
+                    statistic      : "p95",
+                    value          : locateMetricStat(
+                        benchmarkData,
+                        "BarcodeMacrobenchmark.openQrCode",
+                        "frameDurationCpuMs",
+                        "p95"
+                    ),
+                    allowedDriftPct: 15.0
+                ],
+                [
+                    benchmark      : "BarcodeMacrobenchmark.openQrCode",
+                    metric         : "frameOverrunMs",
+                    statistic      : "p95",
+                    value          : locateMetricStat(
+                        benchmarkData,
+                        "BarcodeMacrobenchmark.openQrCode",
+                        "frameOverrunMs",
+                        "p95"
+                    ),
+                    allowedDriftPct: 20.0
+                ]
+            ]
+        ]
+
+        macrobenchmarkGoldenFile.parentFile.mkdirs()
+        macrobenchmarkGoldenFile.text = JsonOutput.prettyPrint(JsonOutput.toJson(captured)) + System.lineSeparator()
+        logger.lifecycle("Wrote macrobenchmark golden file to ${macrobenchmarkGoldenFile}")
+    }
+}
+
+tasks.register("verifyMacrobenchmarkGolden") {
+    group = "verification"
+    description = "Checks latest macrobenchmark timings against golden/macrobenchmark-golden.json"
+
+    doLast {
+        if (!macrobenchmarkGoldenFile.exists()) {
+            throw new GradleException(
+                "Missing ${macrobenchmarkGoldenFile}. " +
+                    "Run :macrobenchmark:captureMacrobenchmarkGolden after a trusted benchmark run."
+            )
+        }
+
+        def benchmarkData = readLatestBenchmarkData()
+        def golden = new JsonSlurper().parse(macrobenchmarkGoldenFile)
+
+        def regressions = []
+        golden.benchmarks.each { entry ->
+            def current = locateMetricStat(
+                benchmarkData,
+                entry.benchmark as String,
+                entry.metric as String,
+                entry.statistic as String
+            )
+            def baseline = (entry.value as Number).doubleValue()
+            def allowed = baseline * (1.0d + ((entry.allowedDriftPct as Number).doubleValue() / 100.0d))
+
+            if (current > allowed) {
+                regressions << "${entry.benchmark} ${entry.metric}.${entry.statistic}: " +
+                    "current=${String.format(Locale.US, '%.3f', current)} " +
+                    "allowed=${String.format(Locale.US, '%.3f', allowed)} " +
+                    "(baseline=${String.format(Locale.US, '%.3f', baseline)})"
+            }
+        }
+
+        if (!regressions.isEmpty()) {
+            throw new GradleException(
+                "Macrobenchmark regression detected:\n - ${regressions.join('\n - ')}"
+            )
+        }
+
+        logger.lifecycle("Macrobenchmark metrics are within golden thresholds.")
+    }
+}
